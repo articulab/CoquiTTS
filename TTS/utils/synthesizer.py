@@ -265,6 +265,9 @@ class Synthesizer(nn.Module):
         reference_wav=None,
         reference_speaker_name=None,
         split_sentences: bool = True,
+        durations=None,
+        return_extra_outputs=False,
+        verbose=False,
         **kwargs,
     ) -> List[int]:
         """🐸 TTS magic. Run all the models and generate speech.
@@ -279,12 +282,15 @@ class Synthesizer(nn.Module):
             reference_wav ([type], optional): reference waveform for voice conversion. Defaults to None.
             reference_speaker_name ([type], optional): speaker id of reference waveform. Defaults to None.
             split_sentences (bool, optional): split the input text into sentences. Defaults to True.
+            durations ([type], optional): durations for custom duration. Defaults to None.
+            return_extra_outputs (bool, optional): return extra outputs from the model. Defaults to False.
             **kwargs: additional arguments to pass to the TTS model.
         Returns:
             List[int]: [description]
         """
         start_time = time.time()
         wavs = []
+        final_outputs = []
 
         if not text and not reference_wav:
             raise ValueError(
@@ -294,9 +300,11 @@ class Synthesizer(nn.Module):
         if text:
             sens = [text]
             if split_sentences:
-                print(" > Text splitted to sentences.")
+                if verbose:
+                    print(" > Text splitted to sentences.")
                 sens = self.split_into_sentences(text)
-            print(sens)
+            if verbose:
+                print(sens)
 
         # handle multi-speaker
         if "voice_dir" in kwargs:
@@ -335,7 +343,7 @@ class Synthesizer(nn.Module):
         # handle multi-lingual
         language_id = None
         if self.tts_languages_file or (
-            hasattr(self.tts_model, "language_manager") 
+            hasattr(self.tts_model, "language_manager")
             and self.tts_model.language_manager is not None
             and not self.tts_config.model == "xtts"
         ):
@@ -406,6 +414,7 @@ class Synthesizer(nn.Module):
                         use_griffin_lim=use_gl,
                         d_vector=speaker_embedding,
                         language_id=language_id,
+                        durations=durations,
                     )
                 waveform = outputs["wav"]
                 if not use_gl:
@@ -439,6 +448,7 @@ class Synthesizer(nn.Module):
 
                 wavs += list(waveform)
                 wavs += [0] * 10000
+                final_outputs.append(outputs)
         else:
             # get the speaker embedding or speaker id for the reference wav file
             reference_speaker_embedding = None
@@ -491,11 +501,17 @@ class Synthesizer(nn.Module):
                 # run vocoder model
                 # [1, T, C]
                 waveform = self.vocoder_model.inference(vocoder_input.to(vocoder_device))
+                final_outputs = outputs
             if torch.is_tensor(waveform) and waveform.device != torch.device("cpu"):
                 waveform = waveform.cpu()
             if not use_gl:
                 waveform = waveform.numpy()
             wavs = waveform.squeeze()
+
+        if return_extra_outputs:
+            return wavs, final_outputs
+        else:
+            return wavs
 
         # compute stats
         process_time = time.time() - start_time

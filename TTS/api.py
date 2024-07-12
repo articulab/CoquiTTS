@@ -168,9 +168,7 @@ class TTS(nn.Module):
         self.synthesizer = None
         self.model_name = model_name
 
-        model_path, config_path, vocoder_path, vocoder_config_path, model_dir = self.download_model_by_name(
-            model_name
-        )
+        model_path, config_path, vocoder_path, vocoder_config_path, model_dir = self.download_model_by_name(model_name)
 
         # init synthesizer
         # None values are fetch from the model
@@ -243,6 +241,9 @@ class TTS(nn.Module):
         emotion: str = None,
         speed: float = None,
         split_sentences: bool = True,
+        durations=None,
+        return_extra_outputs=False,
+        verbose=False,
         **kwargs,
     ):
         """Convert text to speech.
@@ -267,6 +268,8 @@ class TTS(nn.Module):
                 Split text into sentences, synthesize them separately and concatenate the file audio.
                 Setting it False uses more VRAM and possibly hit model specific text length or VRAM limits. Only
                 applicable to the 🐸TTS models. Defaults to True.
+            durations ([type], optional): durations for custom duration. Defaults to None.
+            return_extra_outputs (bool, optional): return extra outputs from the model. Defaults to False.
             kwargs (dict, optional):
                 Additional arguments for the model.
         """
@@ -283,6 +286,9 @@ class TTS(nn.Module):
             style_text=None,
             reference_speaker_name=None,
             split_sentences=split_sentences,
+            durations=durations,
+            return_extra_outputs=return_extra_outputs,
+            verbose=verbose,
             **kwargs,
         )
         return wav
