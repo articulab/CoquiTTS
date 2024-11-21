@@ -59,13 +59,21 @@ def pip_install(package_name):
     subprocess.call([sys.executable, "-m", "pip", "install", package_name])
 
 
-requirements = open(os.path.join(cwd, "requirements.txt"), "r").readlines()
+requirements = [
+    line for line in open(os.path.join(cwd, "requirements.txt"), "r").read().splitlines() if not line.startswith("#")
+]
 with open(os.path.join(cwd, "requirements.notebooks.txt"), "r") as f:
-    requirements_notebooks = f.readlines()
+    requirements_notebooks = [line for line in f.read().splitlines() if not line.startswith("#")]
+
 with open(os.path.join(cwd, "requirements.dev.txt"), "r") as f:
-    requirements_dev = f.readlines()
+    requirements_dev = [line for line in f.read().splitlines() if not line.startswith("#")]
 with open(os.path.join(cwd, "requirements.ja.txt"), "r") as f:
-    requirements_ja = f.readlines()
+    requirements_ja = [line for line in f.read().splitlines() if not line.startswith("#")]
+with open(os.path.join(cwd, "requirements.py3117.txt"), "r") as f:
+    requirements_py3117 = [line for line in f.read().splitlines() if not line.startswith("#")]
+with open(os.path.join(cwd, "requirements.versionless.txt"), "r") as f:
+    requirements_versionless = [line for line in f.read().splitlines() if not line.startswith("#")]
+
 requirements_all = requirements_dev + requirements_notebooks + requirements_ja
 
 with open("README.md", "r", encoding="utf-8") as readme_file:
@@ -110,12 +118,23 @@ setup(
         "develop": develop,
         # 'build_ext': build_ext
     },
-    install_requires=requirements,
+    # install_requires=requirements,
+    # extras_require={
+    #     "all": requirements_all,
+    #     "dev": requirements_dev,
+    #     "notebooks": requirements_notebooks,
+    #     "ja": requirements_ja,
+    #     "py3117": requirements_py3117,
+    # },
+    install_requires=[],
     extras_require={
-        "all": requirements_all,
-        "dev": requirements_dev,
-        "notebooks": requirements_notebooks,
-        "ja": requirements_ja,
+        "default": requirements,
+        "all": requirements + requirements_all,
+        "dev": requirements + requirements_dev,
+        "notebooks": requirements + requirements_notebooks,
+        "ja": requirements + requirements_ja,
+        "py3117": requirements_py3117,
+        "versionless": requirements_versionless,
     },
     python_requires=">=3.9.0, <3.12",
     entry_points={"console_scripts": ["tts=TTS.bin.synthesize:main", "tts-server = TTS.server.server:main"]},

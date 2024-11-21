@@ -1,0 +1,55 @@
+# core deps
+numpy
+cython
+scipy
+# torch
+torchaudio
+soundfile
+librosa
+scikit-learn
+numba
+inflect
+tqdm
+anyascii
+pyyaml
+fsspec
+aiohttp
+packaging
+mutagen
+# deps for examples
+flask
+# deps for inference
+pysbd
+# deps for notebooks
+umap-learn
+pandas
+# deps for training
+matplotlib
+# coqui stack
+trainer
+# config management
+coqpit
+# chinese g2p deps
+jieba
+pypinyin
+# korean
+hangul_romanize
+# gruut+supported langs
+gruut
+# deps for korean
+jamo
+nltk
+g2pkk
+# deps for bangla
+bangla
+bnnumerizer
+bnunicodenormalizer
+#deps for tortoise
+einops
+transformers
+#deps for bark
+encodec
+# deps for XTTS
+unidecode
+num2words
+spacy
